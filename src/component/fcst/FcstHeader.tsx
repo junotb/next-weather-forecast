@@ -4,7 +4,7 @@ import React from 'react';
 
 export default function Header() {
   return (
-    <header className="absolute top-0 left-0 flex justify-between items-center px-4 py-2 w-full h-16 bg-violet-400">
+    <header className="absolute top-0 left-0 flex justify-between items-center px-4 py-2 w-full h-16 bg-violet-200">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="currentColor"

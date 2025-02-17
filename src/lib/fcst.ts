@@ -4,6 +4,11 @@ import axios from 'axios';
 
 const API_KEY_DEC = process.env.API_KEY_DEC;
 
+/**
+ * 단기 예보 데이터를 인스턴스로 변환
+ * @param items 단기 예보 데이터
+ * @returns 인스턴스 배열
+ */
 const transformFcstResponseItems = (items: FcstResponseItem[]): FcstInstance[] => {
   const instanceMap: Map<string, FcstInstance> = new Map();
 
@@ -29,6 +34,10 @@ const transformFcstResponseItems = (items: FcstResponseItem[]): FcstInstance[] =
   return Array.from(instanceMap.values());
 };
 
+/**
+ * 단기 예보 데이터를 요청
+ * @returns 인스턴스 배열
+ */
 const requestFcst = async () => {
   const today = new Date();
   today.setHours(today.getHours() + 9); // KST (UTC+9) 기준 시간으로 설정 (서버가 UTC 시간대이므로)
@@ -74,25 +83,4 @@ const requestFcst = async () => {
   }
 };
 
-const convertFcstCategory = (category: string): string => {
-  switch (category) {
-    case 'POP': return '강수확률';
-    case 'PTY': return '강수형태';
-    case 'PCP': return '1시간 강수량';
-    case 'REH': return '습도';
-    case 'SNO': return '1시간 신적설';
-    case 'SKY': return '하늘상태';
-    case 'TMP': return '1시간 기온';
-    case 'TMN': return '일 최저기온';
-    case 'TMX': return '일 최고기온';
-    case 'UUU': return '풍속(동서성분)';
-    case 'VVV': return '풍속(남북성분)';
-    case 'WAV': return '파고';
-    case 'VEC': return '풍향';
-    case 'WSD': return '풍속';
-    default: return category;
-  }
-};
-
-
-export { requestFcst, convertFcstCategory };
+export { requestFcst };
