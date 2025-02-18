@@ -30,3 +30,25 @@ html, body {
   height: 100%;
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* 웹킷 기반 브라우저용 (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 8px; /* 세로 스크롤바 너비 */
+  height: 8px; /* 가로 스크롤바 높이 */
+}
+
+/* 스크롤바 트랙 (배경) */
+::-webkit-scrollbar-track {
+  background: transparent; /* 트랙 배경 투명 */
+}
+
+/* 스크롤바 핸들 (움직이는 부분) */
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.3); /* 반투명 검은색 */
+  border-radius: 10px; /* 둥글게 */
+}
+
+/* 스크롤바 핸들에 호버 시 */
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.5); /* 더 진한 색 */
+}

@@ -19,7 +19,7 @@ export default function FcstTemperaturBar() {
   console.log(fcstData);
   
   return (
-    <div className="flex gap-2 w-full h-24 bg-violet-300 overflow-x-auto rounded-xl shadow-xl">
+    <div className="flex items-center p-2 space-x-2 w-full h-24 bg-violet-300 overflow-x-auto rounded-xl shadow-xl">
       {fcstData.map((fcst, index) => (
         <FcstTemperatureCard key={index} fcst={fcst} />
       ))}
