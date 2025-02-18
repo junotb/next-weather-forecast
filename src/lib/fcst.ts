@@ -41,15 +41,10 @@ const transformFcstResponseItems = (items: FcstResponseItem[]): FcstInstance[] =
 const requestFcst = async () => {
   const today = new Date();
   today.setHours(today.getHours() + 9); // KST (UTC+9) 기준 시간으로 설정 (서버가 UTC 시간대이므로)
+  today.setHours(today.getHours() + 1); // 1시간 뒤의 데이터를 요청
 
-  // 24시 이후의 데이터를 요청할 경우, 다음 날 데이터를 요청하도록 설정
-  if (today.getHours() >= 24) {
-    today.setDate(today.getDate() + 1);
-    today.setHours(today.getHours() - 24);
-  }
   
   const todayDate = today.toISOString().slice(0, 10).replace(/-/g, '');
-  const todayTime = today.toISOString().slice(11, 13) + '00';
 
   const fcstResponseItems: FcstResponseItem[] = [];
 
@@ -61,13 +56,11 @@ const requestFcst = async () => {
         numOfRows: 864,
         dataType: 'JSON',
         base_date: todayDate,
-        base_time: todayTime,
+        base_time: '0500',
         nx: 60,
         ny: 127,
       },
     });
-
-    console.log(response.data);
 
     const { header, body } = response.data.response;
 

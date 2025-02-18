@@ -15,6 +15,8 @@ export default function FcstTemperaturBar() {
     
     fetchFcst();
   }, [setFcstData]);
+
+  console.log(fcstData);
   
   return (
     <div className="flex gap-2 w-full h-24 bg-violet-300 overflow-x-auto rounded-xl shadow-xl">

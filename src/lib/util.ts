@@ -1,17 +1,22 @@
 /**
- * 시간 형식 변환
+ * 시간 형식 변환 (ex. 오후 2시)
  * @param hhmm 시간 형식
  * @returns 변환된 시간 형식
  */
 const formatTime = (hhmm: string) => {
   if (!/^\d{4}$/.test(hhmm)) {
-    throw new Error("Invalid input format. Expected 'hhmm' as a 4-digit string.");
+    throw new Error(`잘못된 시간 형식입니다. 예시: 1530`);
   }
   
-  const hh = hhmm.slice(0, 2); // 앞 2자리 (시간)
-  const mm = hhmm.slice(2, 4); // 뒤 2자리 (분)
+  let hh = parseInt(hhmm.slice(0, 2), 10); // 시 (숫자로 변환)
+  const mm = parseInt(hhmm.slice(2, 4), 10); // 분
+  const period = hh < 12 ? "오전" : "오후"; // 오전/오후 결정
   
-  return `${hh}:${mm}`;
+  // 12시간 형식으로 변환 (0시는 12시, 13~23시는 1~11시로 변환)
+  hh = hh === 0 ? 12 : hh > 12 ? hh - 12 : hh;
+  
+  // 분이 0이면 "오후 2시", 분이 있으면 "오후 2시 30분" 형식
+  return mm === 0 ? `${period} ${hh}시` : `${period} ${hh}시 ${mm}분`;
 }
 
 /**
