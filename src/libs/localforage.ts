@@ -18,7 +18,7 @@ const getAllForecastData = async () => {
       forecasts.push(value as FcstInstance);
     });
   } catch (error) {
-    console.error("Error retrieving all data:", error);
+    console.error("모든 데이터 조회 실패:", error);
   }
 
   return forecasts;
@@ -31,7 +31,7 @@ const getForecastData = async (nx: number, ny: number, fcstDate: string, fcstTim
     const data = await localforage.getItem(key);
     return data;
   } catch (error) {
-    console.error("Error retrieving data:", error);
+    console.error("데이터 조회 실패:", error);
     return null;
   }
 };
@@ -46,7 +46,7 @@ const saveForecastData = async (data: FcstInstance) => {
       localforage.setItem(key, { nx, ny, fcstDate, fcstTime, fcstData });
     });
   } catch (error) {
-    console.error("Error saving data:", error);
+    console.error("데이터 저장 실패:", error);
   }
 };
 

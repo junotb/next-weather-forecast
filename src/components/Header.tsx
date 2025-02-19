@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import { requestFcst } from '@/lib/fcst';
-import { saveForecastData } from '@/lib/localforage';
+import { requestFcst } from '@/libs/fcst';
+import { saveForecastData } from '@/libs/localforage';
 
 export default function Header() {
   const fetchFcst = async () => {
