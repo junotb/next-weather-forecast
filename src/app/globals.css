@@ -31,20 +31,43 @@ html, body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* 공통 스크롤바 스타일 (Firefox, Chrome, Edge) */
+* {
+  scrollbar-width: thin; /* Firefox에서 얇은 스크롤바 적용 */
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent; /* (스크롤 색, 트랙 색) */
+}
+
+/* 웹킷 기반 브라우저 (Safari, Chrome) */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
+/* 스크롤바 트랙 (배경) */
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 
+/* 스크롤바 핸들 (스크롤이 움직이는 부분) */
 ::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.2); /* 밝은 반투명 */
-  border-radius: 10px;
+  border-radius: 10px; /* 둥근 모서리 */
 }
 
+/* 스크롤바 핸들 호버시 */
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.4);
+}
+
+/* PC 브라우저에서만 보이는 양쪽 끝 화살표 숨기기 */
+::-webkit-scrollbar-button {
+  display: none;
+}
+
+/* Edge 및 기타 브라우저 호환성 처리 */
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  }
 }
