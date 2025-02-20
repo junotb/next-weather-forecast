@@ -41,17 +41,29 @@ export default function FcstProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (fcstData.length === 0) return;
 
-    // fcstData.fcstData의 카테고리가 TMP인 값들 중, 최대값, 최소값, 현재로부터 가장 가까운 미래의 값
-    const maxTmp = Math.max(...fcstData.map((fcst) => parseInt(fcst.fcstData.find((data) => data.category === 'TMP')?.value || '0')));
-    const minTmp = Math.min(...fcstData.map((fcst) => parseInt(fcst.fcstData.find((data) => data.category === 'TMP')?.value || '0')));
+    let maxTmp = 0;
+    let minTmp = 0;
+    let currentTmp = 0;
+    let minTimeDiff = 0;
+
+    const currentHour = new Date().getHours(); // 현재 시간 (24시간)
     
-    // 가장 가까운 시간의 TMP 값을 찾음
-    const nearestFcst = fcstData
-      .map((fcst) => ({
-        ...fcst,
-        timeDiff: Math.abs(parseInt(fcst.fcstTime, 10) - parseInt(nowTime, 10)), // 시간 차이 계산
-      }))
-      .sort((a, b) => a.timeDiff - b.timeDiff)[0]; // 가장 가까운 시간 찾기
+    fcstData.forEach((fcst) => {
+      const tmpData = fcst.fcstData.find((data) => data.category === 'TMP');
+      if (!tmpData) return;
+      
+      const tmpValue = parseInt(tmpData.value, 10);
+      if (isNaN(tmpValue)) return;
+
+      maxTmp = Math.max(maxTmp, tmpValue);
+      minTmp = Math.min(minTmp, tmpValue);
+      
+      const timeDiff = Math.abs(parseInt(fcst.fcstTime, 10) - currentHour);
+      if (timeDiff < minTimeDiff) {
+        minTimeDiff = timeDiff;
+        currentTmp = tmpValue;
+      }
+    });
 
     setMaxTmp(maxTmp);
     setMinTmp(minTmp);
