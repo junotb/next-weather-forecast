@@ -4,7 +4,7 @@ import FcstContent from '@/components/fcst/FcstContent';
 import FcstFooter from '@/components/fcst/FcstFooter';
 import FcstProvider from '@/contexts/FcstContext';
 
-export default function Header() {
+export default function Fcst() {
   return (
     <FcstProvider>
       <FcstHeader />

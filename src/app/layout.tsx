@@ -1,7 +1,7 @@
-import { ReactNode } from "react";
-import type { Metadata } from "next";
-import { Noto_Sans_KR } from "next/font/google";
-import "./globals.css";
+import { ReactNode } from 'react';
+import type { Metadata } from 'next';
+import { Noto_Sans_KR } from 'next/font/google';
+import './globals.css';
 
 const notoSansKR = Noto_Sans_KR({
   subsets: ['latin'],
@@ -10,8 +10,8 @@ const notoSansKR = Noto_Sans_KR({
 });
 
 export const metadata: Metadata = {
-  title: "날씨 알리미",
-  description: "날씨 알리미",
+  title: '날씨 알리미',
+  description: '날씨 알리미',
 };
 
 export default function RootLayout({
