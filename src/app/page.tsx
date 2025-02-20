@@ -1,4 +1,4 @@
-import Fcst from "@/components/fcst/Fcst";
+import Fcst from '@/components/fcst/Fcst';
 
 export default function Home() {
   return (
