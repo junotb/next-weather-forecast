@@ -58,7 +58,6 @@ const requestFcst = async () => {
 
   // YYYYMMDDHHMM 포맷 변환 함수
   const formatDate = (date: Date) => `${date.getUTCFullYear()}${String(date.getUTCMonth() + 1).padStart(2, '0')}${String(date.getUTCDate()).padStart(2, '0')}`;
-  const formatTime = (date: Date) => `${String(date.getUTCHours()).padStart(2, '0')}00`;
 
   // 일기예보 데이터 배열
   const fcstResponseItems: FcstResponseItem[] = [];
