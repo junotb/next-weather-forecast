@@ -71,7 +71,7 @@ const requestFcst = async () => {
         pageNo: 1,
         numOfRows: 864,
         dataType: 'JSON',
-        base_date: (kstNow.getUTCHours() > 0 && kstNow.getUTCHours() < 5)
+        base_date: kstNow.getUTCHours() < 5
           ? formatDate(new Date(kstNow.getTime() - 1 * 24 * 60 * 60 * 1000))
           : formatDate(kstNow),
         base_time: '0500',
