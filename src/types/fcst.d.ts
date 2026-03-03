@@ -1,3 +1,11 @@
+/** 격자 좌표 (지역) */
+interface FcstLocation {
+  nx: number;
+  ny: number;
+  /** 지역명 (선택, 격자_위경도 엑셀 참조) */
+  name?: string;
+}
+
 interface FcstRequest {
   serviceKey?: string; // 공공데이터포털에서 받은 인증키
   pageNo: number; // 페이지 번호 (예: 1)

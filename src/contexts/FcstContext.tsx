@@ -1,14 +1,37 @@
 'use client';
 
-import { createContext, ReactNode, useContext, useState, useEffect } from 'react';
-import { getAllForecastData } from '@/libs/localforage';
+import {
+  createContext,
+  ReactNode,
+  useContext,
+  useState,
+  useEffect,
+  useMemo,
+} from 'react';
+import {
+  loadAllForecasts,
+  getLocations,
+  setLocations,
+} from '@/lib/localforage';
 
 interface FcstContextType {
+  /** 현재 선택된 지역의 예보 시계열 */
   fcstData: FcstInstance[];
   setFcstData: (fcstData: FcstInstance[]) => void;
   maxTmp: number;
   minTmp: number;
+  /** 현재 시각에 해당하는 예보 (선택 지역 기준) */
   currentFcst: FcstInstance;
+  isFcstLoading: boolean;
+  /** 지역 목록 */
+  locations: FcstLocation[];
+  /** 현재 선택 지역 인덱스 */
+  currentLocationIndex: number;
+  setCurrentLocationIndex: (index: number) => void;
+  /** 지역 추가 (추가 후 데이터 fetch) */
+  addLocation: (loc: FcstLocation) => Promise<void>;
+  /** 지역 제거 */
+  removeLocation: (index: number) => Promise<void>;
 }
 
 const initialFcst: FcstInstance = {
@@ -25,60 +48,119 @@ export const FcstContext = createContext<FcstContextType>({
   maxTmp: 0,
   minTmp: 0,
   currentFcst: initialFcst,
+  isFcstLoading: true,
+  locations: [],
+  currentLocationIndex: 0,
+  setCurrentLocationIndex: () => {},
+  addLocation: async () => {},
+  removeLocation: async () => {},
 });
 
 export default function FcstProvider({ children }: { children: ReactNode }) {
-  const [fcstData, setFcstData] = useState<FcstInstance[]>([]);
-  const [maxTmp, setMaxTmp] = useState<number>(0);
-  const [minTmp, setMinTmp] = useState<number>(0);
+  const [locations, setLocationsState] = useState<FcstLocation[]>([]);
+  const [currentLocationIndex, setCurrentLocationIndex] = useState(0);
+  const [forecastByLocation, setForecastByLocation] = useState<
+    Map<string, FcstInstance[]>
+  >(new Map());
+  const [maxTmp, setMaxTmp] = useState(0);
+  const [minTmp, setMinTmp] = useState(0);
   const [currentFcst, setCurrentFcst] = useState<FcstInstance>(initialFcst);
+  const [isFcstLoading, setIsFcstLoading] = useState(true);
 
-  // 예보 데이터 가져오기
+  const currentKey =
+    locations[currentLocationIndex] != null
+      ? `${locations[currentLocationIndex].nx}_${locations[currentLocationIndex].ny}`
+      : '';
+  const fcstData = useMemo(
+    () => forecastByLocation.get(currentKey) ?? [],
+    [forecastByLocation, currentKey]
+  );
+
+  const setFcstData = (data: FcstInstance[]) => {
+    if (currentKey) {
+      setForecastByLocation((prev) => {
+        const next = new Map(prev);
+        next.set(currentKey, data);
+        return next;
+      });
+    }
+  };
+
   useEffect(() => {
-    // 이미 데이터가 있으면 데이터를 가져오지 않음
-    if (fcstData.length > 0) return;
+    const init = async () => {
+      setIsFcstLoading(true);
+      try {
+        const locs = await getLocations();
+        setLocationsState(locs);
 
-    // 데이터가 없으면 데이터를 가져옴
-    const fetchFcst = async () => {
-      const newFcstData = await getAllForecastData();
-      setFcstData(newFcstData);
+        const map = await loadAllForecasts();
+        setForecastByLocation(map);
+      } finally {
+        setIsFcstLoading(false);
+      }
     };
-    
-    fetchFcst();
-  }, [fcstData.length, setFcstData]);
+    init();
+  }, []);
 
-  // 실시간 예보 데이터와 최고 기온과 최저 기온 계산
   useEffect(() => {
     if (fcstData.length === 0) return;
 
-    let maxTmp = 0;
-    let minTmp = 0;
-    
-    fcstData.forEach((fcst, index) => {
-      // 실시간 예보 데이터 저장
-      if (index === 0) {
-        setCurrentFcst(fcst);
-      }
+    let maxTmpVal = 0;
+    let minTmpVal = Infinity;
 
-      const tmpData = fcst.fcstData.find((data) => data.category === 'TMP');
+    fcstData.forEach((fcst, index) => {
+      if (index === 0) setCurrentFcst(fcst);
+
+      const tmpData = fcst.fcstData.find((d) => d.category === 'TMP');
       if (!tmpData) return;
-      
+
       const tmpValue = parseInt(tmpData.value, 10);
       if (isNaN(tmpValue)) return;
 
-      // 최고 기온과 최저 기온 계산
-      maxTmp = Math.max(maxTmp, tmpValue);
-      minTmp = Math.min(minTmp, tmpValue);
+      maxTmpVal = Math.max(maxTmpVal, tmpValue);
+      minTmpVal = Math.min(minTmpVal, tmpValue);
     });
 
-    setMaxTmp(maxTmp);
-    setMinTmp(minTmp);
-  }, [currentFcst, fcstData]);
+    setMaxTmp(maxTmpVal);
+    setMinTmp(minTmpVal === Infinity ? 0 : minTmpVal);
+  }, [fcstData]);
+
+  const addLocation = async (loc: FcstLocation) => {
+    const next = [...locations, loc];
+    await setLocations(next);
+    setLocationsState(next);
+    setCurrentLocationIndex(next.length - 1);
+    const map = await loadAllForecasts();
+    setForecastByLocation(map);
+  };
+
+  const removeLocation = async (index: number) => {
+    const next = locations.filter((_, i) => i !== index);
+    if (next.length === 0) return;
+    await setLocations(next);
+    setLocationsState(next);
+    const newIndex = Math.min(currentLocationIndex, next.length - 1);
+    setCurrentLocationIndex(newIndex);
+    const map = await loadAllForecasts();
+    setForecastByLocation(map);
+  };
+
+  const value: FcstContextType = {
+    fcstData,
+    setFcstData,
+    maxTmp,
+    minTmp,
+    currentFcst,
+    isFcstLoading,
+    locations,
+    currentLocationIndex,
+    setCurrentLocationIndex,
+    addLocation,
+    removeLocation,
+  };
 
   return (
-    <FcstContext.Provider value={{ fcstData, setFcstData, maxTmp, minTmp, currentFcst }}>
-      {children}
-    </FcstContext.Provider>
+    <FcstContext.Provider value={value}>{children}</FcstContext.Provider>
   );
 }
 

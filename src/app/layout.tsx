@@ -1,7 +1,8 @@
 import { ReactNode } from 'react';
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Noto_Sans_KR } from 'next/font/google';
 import './globals.css';
+import { Providers } from './providers';
 
 const notoSansKR = Noto_Sans_KR({
   subsets: ['latin'],
@@ -14,6 +15,11 @@ export const metadata: Metadata = {
   description: '날씨 알리미',
 };
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -22,7 +28,7 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className={notoSansKR.className}>
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

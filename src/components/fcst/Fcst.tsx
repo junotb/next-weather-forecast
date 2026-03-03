@@ -1,4 +1,3 @@
-import React from 'react';
 import FcstHeader from '@/components/fcst/FcstHeader';
 import FcstContent from '@/components/fcst/FcstContent';
 import FcstFooter from '@/components/fcst/FcstFooter';
@@ -9,9 +8,11 @@ export default function Fcst() {
   return (
     <FcstProvider>
       <ModalProvider>
-        <FcstHeader />
-        <FcstContent />
-        <FcstFooter />
+        <div className="relative min-h-dvh w-full">
+          <FcstHeader />
+          <FcstContent />
+          <FcstFooter />
+        </div>
       </ModalProvider>
     </FcstProvider>
   );
