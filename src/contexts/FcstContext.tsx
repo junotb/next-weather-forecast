@@ -7,12 +7,14 @@ import {
   useState,
   useEffect,
   useMemo,
+  useCallback,
 } from 'react';
 import {
   loadAllForecasts,
   getLocations,
   setLocations,
 } from '@/lib/localforage';
+import { findCurrentFcstIndex } from '@/lib/fcstUtils';
 
 interface FcstContextType {
   /** 현재 선택된 지역의 예보 시계열 */
@@ -22,6 +24,8 @@ interface FcstContextType {
   minTmp: number;
   /** 현재 시각에 해당하는 예보 (선택 지역 기준) */
   currentFcst: FcstInstance;
+  /** 현재 시각에 해당하는 fcstData 인덱스 */
+  currentFcstIndex: number;
   isFcstLoading: boolean;
   /** 지역 목록 */
   locations: FcstLocation[];
@@ -32,6 +36,12 @@ interface FcstContextType {
   addLocation: (loc: FcstLocation) => Promise<void>;
   /** 지역 제거 */
   removeLocation: (index: number) => Promise<void>;
+  /** 새로고침 (캐시 무시, API 재요청) */
+  refresh: () => Promise<void>;
+  /** 콘텐츠 준비 완료 (스크롤 완료 등) - 헤더 지역명 노출 시점 */
+  isContentReady: boolean;
+  /** 콘텐츠 준비 완료 표시 (FcstContent에서 스크롤 완료 시 호출) */
+  markContentReady: () => void;
 }
 
 const initialFcst: FcstInstance = {
@@ -48,12 +58,16 @@ export const FcstContext = createContext<FcstContextType>({
   maxTmp: 0,
   minTmp: 0,
   currentFcst: initialFcst,
+  currentFcstIndex: 0,
   isFcstLoading: true,
   locations: [],
   currentLocationIndex: 0,
   setCurrentLocationIndex: () => {},
   addLocation: async () => {},
   removeLocation: async () => {},
+  refresh: async () => {},
+  isContentReady: false,
+  markContentReady: () => {},
 });
 
 export default function FcstProvider({ children }: { children: ReactNode }) {
@@ -66,6 +80,7 @@ export default function FcstProvider({ children }: { children: ReactNode }) {
   const [minTmp, setMinTmp] = useState(0);
   const [currentFcst, setCurrentFcst] = useState<FcstInstance>(initialFcst);
   const [isFcstLoading, setIsFcstLoading] = useState(true);
+  const [isContentReady, setIsContentReady] = useState(false);
 
   const currentKey =
     locations[currentLocationIndex] != null
@@ -89,6 +104,7 @@ export default function FcstProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const init = async () => {
       setIsFcstLoading(true);
+      setIsContentReady(false);
       try {
         const locs = await getLocations();
         setLocationsState(locs);
@@ -102,15 +118,24 @@ export default function FcstProvider({ children }: { children: ReactNode }) {
     init();
   }, []);
 
+  const currentFcstIndex = useMemo(
+    () => (fcstData.length > 0 ? findCurrentFcstIndex(fcstData) : 0),
+    [fcstData]
+  );
+
   useEffect(() => {
-    if (fcstData.length === 0) return;
+    if (fcstData.length === 0) {
+      setIsContentReady(false);
+      return;
+    }
+
+    const idx = findCurrentFcstIndex(fcstData);
+    setCurrentFcst(fcstData[idx]);
 
     let maxTmpVal = 0;
     let minTmpVal = Infinity;
 
-    fcstData.forEach((fcst, index) => {
-      if (index === 0) setCurrentFcst(fcst);
-
+    fcstData.forEach((fcst) => {
       const tmpData = fcst.fcstData.find((d) => d.category === 'TMP');
       if (!tmpData) return;
 
@@ -145,18 +170,35 @@ export default function FcstProvider({ children }: { children: ReactNode }) {
     setForecastByLocation(map);
   };
 
+  const refresh = async () => {
+    setIsFcstLoading(true);
+    setIsContentReady(false);
+    try {
+      const map = await loadAllForecasts(true);
+      setForecastByLocation(map);
+    } finally {
+      setIsFcstLoading(false);
+    }
+  };
+
+  const markContentReady = useCallback(() => setIsContentReady(true), []);
+
   const value: FcstContextType = {
     fcstData,
     setFcstData,
     maxTmp,
     minTmp,
     currentFcst,
+    currentFcstIndex,
     isFcstLoading,
     locations,
     currentLocationIndex,
     setCurrentLocationIndex,
     addLocation,
     removeLocation,
+    refresh,
+    isContentReady,
+    markContentReady,
   };
 
   return (

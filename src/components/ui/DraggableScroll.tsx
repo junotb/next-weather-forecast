@@ -1,22 +1,45 @@
 'use client';
 
-import React, { useRef, useState, MouseEvent, ReactNode } from 'react';
+import React, { useRef, useState, useEffect, MouseEvent, ReactNode } from 'react';
+
+const SCROLL_ANIMATION_MS = 600;
 
 interface DraggableScrollProps {
   children: ReactNode;
   className?: string;
   'aria-label'?: string;
+  /** 초기 로드 및 새로고침 시 이 인덱스의 자식으로 스크롤 */
+  scrollToIndex?: number;
+  /** 데이터 갱신 시 스크롤 트리거 (예: fcstData 변경 시 전달) */
+  scrollTriggerKey?: string;
+  /** 현재 시간으로 스크롤 완료 시 호출 */
+  onScrollToIndexComplete?: () => void;
 }
 
 const DraggableScroll: React.FC<DraggableScrollProps> = ({
   children,
   className,
   'aria-label': ariaLabel,
+  scrollToIndex = 0,
+  scrollTriggerKey,
+  onScrollToIndexComplete,
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!containerRef.current || scrollToIndex < 0) return;
+    const el = containerRef.current.children[scrollToIndex] as HTMLElement | undefined;
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
+      const t = setTimeout(() => {
+        onScrollToIndexComplete?.();
+      }, SCROLL_ANIMATION_MS);
+      return () => clearTimeout(t);
+    }
+  }, [scrollToIndex, scrollTriggerKey, onScrollToIndexComplete]);
 
   const handleMouseDown = (e: MouseEvent) => {
     if (!containerRef.current) return;

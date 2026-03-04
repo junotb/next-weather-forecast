@@ -7,13 +7,21 @@ import { useEffect, useState } from 'react';
 import { Clock } from 'lucide-react';
 import clsx from 'clsx';
 
-export default function FcstTemperatureBar() {
-  const { fcstData } = useFcstContext();
+interface FcstTemperatureBarProps {
+  onScrollToCurrentComplete?: () => void;
+}
+
+export default function FcstTemperatureBar({ onScrollToCurrentComplete }: FcstTemperatureBarProps) {
+  const { fcstData, currentFcstIndex } = useFcstContext();
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     setIsVisible(fcstData.length > 0);
   }, [fcstData]);
+
+  const scrollTriggerKey = fcstData.length > 0
+    ? `${fcstData[0]?.fcstDate}-${fcstData[0]?.fcstTime}-${fcstData.length}`
+    : '';
   
   return (
     <section
@@ -43,6 +51,9 @@ export default function FcstTemperatureBar() {
         <DraggableScroll
           className="flex items-center py-3 px-3 gap-4 overflow-x-auto snap-x snap-mandatory scroll-smooth"
           aria-label="시간별 예보 목록"
+          scrollToIndex={currentFcstIndex}
+          scrollTriggerKey={scrollTriggerKey}
+          onScrollToIndexComplete={onScrollToCurrentComplete}
         >
           {fcstData.map((fcst, index) => (
             <FcstTemperatureCard key={index} fcst={fcst} />

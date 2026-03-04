@@ -133,12 +133,13 @@ export async function saveForecastsForLocation(
 
 /**
  * 모든 지역의 예보 로드 (캐시 유효 시 캐시 사용, 만료 시 API 호출 후 저장)
+ * @param forceRefresh true이면 캐시 무시하고 API 재요청
  * @returns Map<"nx_ny", FcstInstance[]>
  */
-export async function loadAllForecasts(): Promise<Map<string, FcstInstance[]>> {
+export async function loadAllForecasts(forceRefresh = false): Promise<Map<string, FcstInstance[]>> {
   const locations = await getLocations();
-  const meta = await getCacheMeta();
-  const expired = isCacheExpired(meta);
+  const meta = forceRefresh ? null : await getCacheMeta();
+  const expired = forceRefresh || isCacheExpired(meta);
   const result = new Map<string, FcstInstance[]>();
 
   const kstNow = getKstNow();

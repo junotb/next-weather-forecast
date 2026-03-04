@@ -156,3 +156,8 @@ export function getTimeOfDay(date: Date = new Date()): TimeOfDay {
   const hour = date.getHours();
   return hour >= 6 && hour < 18 ? 'day' : 'night';
 }
+
+/** 로딩/초기 상태용 모노톤 그라데이션 (동일 색상 = 실질 단색) */
+export const LOADING_PALETTE = {
+  gradient: { from: '#64748b', to: '#64748b' } as const, // slate-500
+};

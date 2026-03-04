@@ -3,6 +3,46 @@
  * @see docs/ROADMAP_DECISIONS.md 0.3
  */
 
+/** KST(한국 표준시) 현재 시각 */
+export function getKstNow(): Date {
+  const now = new Date();
+  return new Date(
+    Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate(),
+      now.getUTCHours() + 9,
+      now.getUTCMinutes(),
+      now.getUTCSeconds()
+    )
+  );
+}
+
+/**
+ * 현재 시각(KST)에 해당하는 fcstData 인덱스 (가장 가까운 과거 또는 현재)
+ */
+export function findCurrentFcstIndex(fcstData: FcstInstance[]): number {
+  if (fcstData.length === 0) return 0;
+  const kst = getKstNow();
+  const kstDateStr = `${kst.getUTCFullYear()}${String(kst.getUTCMonth() + 1).padStart(2, '0')}${String(kst.getUTCDate()).padStart(2, '0')}`;
+  const kstHour = kst.getUTCHours();
+  const kstTimeStr = `${String(kstHour).padStart(2, '0')}00`;
+
+  let bestIndex = 0;
+  for (let i = 0; i < fcstData.length; i++) {
+    const fcst = fcstData[i];
+    const cmp = fcst.fcstDate.localeCompare(kstDateStr);
+    if (cmp < 0) {
+      bestIndex = i;
+      continue;
+    }
+    if (cmp > 0) break;
+    if (fcst.fcstTime <= kstTimeStr) bestIndex = i;
+    else break;
+  }
+  return bestIndex;
+}
+
 /**
  * KST 기준 base_time 및 base_date 산출
  * API 제공 시각: 02:10, 05:10, 08:10, 11:10, 14:10, 17:10, 20:10, 23:10 (KST)
